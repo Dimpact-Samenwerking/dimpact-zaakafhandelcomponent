@@ -315,41 +315,35 @@ export class InformatieObjectAddComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  ngAfterViewInit(): void {
-    if (this.isAfgehandeld()) {
-      this.status.formControl.disable();
-    }
-  }
-
-  ngOnDestroy(): void {
-    for (const subscription of this.subscriptions) {
-      subscription.unsubscribe();
-    }
-  }
-
   onFormSubmit(formGroup: FormGroup): void {
     if (formGroup) {
       const infoObject = new EnkelvoudigInformatieobject();
       Object.keys(formGroup.controls).forEach((key) => {
         const control = formGroup.controls[key];
         const value = control.value;
-        if (value instanceof moment) {
-          infoObject[key] = value; // conversie niet nodig, ISO-8601 in UTC gaat goed met java ZonedDateTime.parse
-        } else if (key === "informatieobjectTypeUUID") {
-          infoObject[key] = value.uuid;
-        } else if (key === "taal") {
-          infoObject[key] = value.code;
-        } else if (key === "status") {
-          infoObject[key] = InformatieobjectStatus[value.value.toUpperCase()];
-        } else if (key === "vertrouwelijkheidaanduiding") {
-          infoObject[key] = value.value;
-        } else if (key === "bestand") {
-          infoObject["bestandsomvang"] = value.size;
-          infoObject["bestandsnaam"] = value.name;
-          infoObject["bestand"] = value;
-          infoObject["formaat"] = value.type;
-        } else {
-          infoObject[key] = value;
+
+        switch (key) {
+          case "informatieobjectTypeUUID":
+            infoObject[key] = value.uuid;
+            break;
+          case "taal":
+            infoObject[key] = value.code;
+            break;
+          case "status":
+            infoObject[key] = InformatieobjectStatus[value.value.toUpperCase()];
+            break;
+          case "vertrouwelijkheidaanduiding":
+            infoObject[key] = value.value;
+            break;
+          case "bestand":
+            infoObject["bestandsomvang"] = value.size;
+            infoObject["bestandsnaam"] = value.name;
+            infoObject["bestand"] = value;
+            infoObject["formaat"] = value.type;
+            break;
+          default:
+            infoObject[key] = value;
+            break;
         }
       });
 
@@ -378,6 +372,18 @@ export class InformatieObjectAddComponent implements AfterViewInit, OnDestroy {
         });
     } else {
       this.sideNav.close();
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (this.isAfgehandeld()) {
+      this.status.formControl.disable();
+    }
+  }
+
+  ngOnDestroy(): void {
+    for (const subscription of this.subscriptions) {
+      subscription.unsubscribe();
     }
   }
 }
